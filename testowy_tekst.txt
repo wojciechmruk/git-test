@@ -1,4 +1,4 @@
-Test something.
+Test something. I bedzie konflikt
 Git to rozproszony system kontroli wersji, który został stworzony przez Linusa Torvaldsa.
 System Git pozwala na śledzenie zmian w kodzie źródłowym i współpracę w zespole programistów.
 Każdy commit w Git zawiera unikalny identyfikator zwany SHA-1 hash.
