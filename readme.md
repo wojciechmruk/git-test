@@ -19,4 +19,4 @@ This repository is used for testing various Git commands and workflows. It conta
 This is a learning repository for Git practice. Feel free to experiment with different Git commands and workflows.
 
 ## Author
-Wojciech Mruk - Git learning project 2024
+Wojciech Mruk - Git learning project 2025
