@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Tutorial - Interactive Todo - Wojciech Mruk</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800 mb-4">
+                 Git Tutorial - Interactive Todo
+            </h1>
+            <p class="text-xl text-gray-600">
+                Learning Git Version Control System with Interactive Progress Tracking
+            </p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-6xl mx-auto" x-data="gitTodoApp()">
+            <!-- Progress Overview -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    Learning Progress
+                </h2>
+                <div class="mb-4">
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>Git Mastery</span>
+                        <span x-text="Math.round((completedTodos.length / allTodos.length) * 100) + '%'"></span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full transition-all duration-500" 
+                             :style="`width: ${(completedTodos.length / allTodos.length) * 100}%`"></div>
+                    </div>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4 text-center">
+                    <div class="bg-green-50 p-3 rounded-lg">
+                        <div class="text-2xl font-bold text-green-600" x-text="completedTodos.length"></div>
+                        <div class="text-sm text-green-600">Completed</div>
+                    </div>
+                    <div class="bg-blue-50 p-3 rounded-lg">
+                        <div class="text-2xl font-bold text-blue-600" x-text="pendingTodos.length"></div>
+                        <div class="text-sm text-blue-600">Pending</div>
+                    </div>
+                    <div class="bg-gray-50 p-3 rounded-lg">
+                        <div class="text-2xl font-bold text-gray-600" x-text="allTodos.length"></div>
+                        <div class="text-sm text-gray-600">Total</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add New Todo -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    ➕ Add New Git Command
+                </h2>
+                <div class="flex gap-4">
+                    <input 
+                        type="text" 
+                        x-model="newTodo.title"
+                        placeholder="Enter Git command (e.g., git stash)"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        @keyup.enter="addTodo()"
+                    >
+                    <select 
+                        x-model="newTodo.category"
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="basic">Basic</option>
+                        <option value="advanced">Advanced</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                    <button 
+                        @click="addTodo()"
+                        class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                    >
+                        Add
+                    </button>
+                </div>
+            </div>
+
+            <!-- Todo Lists -->
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Completed Todos -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                        ✅ Completed Commands
+                    </h2>
+                    <div class="space-y-3" x-show="completedTodos.length > 0">
+                        <template x-for="todo in completedTodos" :key="todo.id">
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                                <div class="flex items-center">
+                                    <span class="text-green-500 mr-3">✅</span>
+                                    <div>
+                                        <div class="font-medium text-gray-800" x-text="todo.title"></div>
+                                        <div class="text-sm text-gray-600" x-text="todo.description"></div>
+                                        <div class="text-xs text-gray-500" x-text="todo.category"></div>
+                                    </div>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button 
+                                        @click="toggleTodo(todo.id)"
+                                        class="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600"
+                                    >
+                                        Undo
+                                    </button>
+                                    <button 
+                                        @click="deleteTodo(todo.id)"
+                                        class="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div x-show="completedTodos.length === 0" class="text-gray-500 text-center py-8">
+                        No completed commands yet. Start learning! 🚀
+                    </div>
+                </div>
+
+                <!-- Pending Todos -->
+                <div class="bg-white rounded-lg shadow-lg p-6">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                        📝 Commands to Learn
+                    </h2>
+                    <div class="space-y-3" x-show="pendingTodos.length > 0">
+                        <template x-for="todo in pendingTodos" :key="todo.id">
+                            <div class="bg-blue-50 rounded-lg border-l-4 border-blue-500 mb-4">
+                                <!-- Minimalist Header -->
+                                <div class="p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            <span class="text-blue-500 mr-3">📝</span>
+                                            <div>
+                                                <div class="font-medium text-gray-800" x-text="todo.title"></div>
+                                                <div class="text-sm text-gray-600" x-text="todo.description"></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button 
+                                                @click="toggleTodo(todo.id)"
+                                                class="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600"
+                                            >
+                                                Complete
+                                            </button>
+                                            <button 
+                                                @click="deleteTodo(todo.id)"
+                                                class="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Expanded Lesson Content -->
+                                <div x-show="todo.showInstruction && todo.type === 'lesson'" 
+                                     x-transition:enter="transition ease-out duration-300"
+                                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                                     x-transition:leave="transition ease-in duration-200"
+                                     x-transition:leave-start="opacity-100 transform translate-y-0"
+                                     x-transition:leave-end="opacity-0 transform -translate-y-2"
+                                     class="px-4 pb-4 space-y-3">
+                                    
+                                    <!-- Instruction -->
+                                    <div class="bg-white p-3 rounded border">
+                                        <h4 class="font-medium text-gray-700 mb-2">📋 Instruction:</h4>
+                                        <p class="text-gray-600" x-text="todo.instruction"></p>
+                                    </div>
+                                    
+                                    <!-- Hint and Solution Buttons -->
+                                    <div class="flex gap-2">
+                                        <button 
+                                            @click="showHint(todo.id)"
+                                            class="px-3 py-1 bg-yellow-500 text-white rounded text-sm hover:bg-yellow-600"
+                                        >
+                                            💡 Show Hint
+                                        </button>
+                                        <button 
+                                            @click="showSolution(todo.id)"
+                                            class="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+                                        >
+                                            🔍 Show Solution
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- Hint -->
+                                    <div x-show="todo.showHint" 
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0"
+                                         x-transition:enter-end="opacity-100"
+                                         class="bg-yellow-50 p-3 rounded border border-yellow-200">
+                                        <h4 class="font-medium text-yellow-800 mb-1">💡 Hint:</h4>
+                                        <p class="text-yellow-700" x-text="todo.hint"></p>
+                                    </div>
+                                    
+                                    <!-- Solution -->
+                                    <div x-show="todo.showSolution" 
+                                         x-transition:enter="transition ease-out duration-200"
+                                         x-transition:enter-start="opacity-0"
+                                         x-transition:enter-end="opacity-100"
+                                         class="bg-purple-50 p-3 rounded border border-purple-200">
+                                        <h4 class="font-medium text-purple-800 mb-1">🔍 Solution:</h4>
+                                        <div class="bg-gray-900 text-green-400 p-2 rounded font-mono text-sm" x-text="todo.solution"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Click to expand instruction -->
+                                <div x-show="!todo.showInstruction && todo.type === 'lesson'" 
+                                     @click="toggleInstruction(todo.id)"
+                                     class="px-4 pb-4 cursor-pointer">
+                                    <div class="text-center text-blue-600 hover:text-blue-800 transition-colors">
+                                        <span class="text-sm">Click to see instruction ▼</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div x-show="pendingTodos.length === 0" class="text-gray-500 text-center py-8">
+                        🎉 All commands completed! You're a Git Master!
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Management -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mt-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    🔧 Data Management
+                </h2>
+                <div class="flex gap-4">
+                    <button 
+                        @click="clearAllData()"
+                        class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    >
+                        Clear All Data
+                    </button>
+                    <div class="text-sm text-gray-600 flex items-center">
+                        💾 Data is automatically saved to localStorage
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commands Reference -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mt-8">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                    💻 Git Commands Reference
+                </h2>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-medium text-gray-700 mb-2">Basic Commands</h3>
+                        <div class="space-y-1 text-sm">
+                            <div class="font-mono bg-white p-1 rounded">git init</div>
+                            <div class="font-mono bg-white p-1 rounded">git add</div>
+                            <div class="font-mono bg-white p-1 rounded">git commit</div>
+                            <div class="font-mono bg-white p-1 rounded">git status</div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-medium text-gray-700 mb-2">Branch Management</h3>
+                        <div class="space-y-1 text-sm">
+                            <div class="font-mono bg-white p-1 rounded">git branch</div>
+                            <div class="font-mono bg-white p-1 rounded">git checkout</div>
+                            <div class="font-mono bg-white p-1 rounded">git merge</div>
+                            <div class="font-mono bg-white p-1 rounded">git rebase</div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-medium text-gray-700 mb-2">Advanced</h3>
+                        <div class="space-y-1 text-sm">
+                            <div class="font-mono bg-white p-1 rounded">git cherry-pick</div>
+                            <div class="font-mono bg-white p-1 rounded">git revert</div>
+                            <div class="font-mono bg-white p-1 rounded">git stash</div>
+                            <div class="font-mono bg-white p-1 rounded">git bisect</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center mt-12 text-gray-500">
+            <p>Git Tutorial - Wojciech Mruk | Interactive Learning with Alpine.js</p>
+        </footer>
+    </div>
+
+    <script>
+        function gitTodoApp() {
+            return {
+                newTodo: {
+                    title: '',
+                    category: 'basic',
+                    description: ''
+                },
+                todos: JSON.parse(localStorage.getItem('gitTodos')) || [
+                    { 
+                        id: 1, 
+                        title: 'git init', 
+                        description: 'Initialize repository', 
+                        category: 'basic', 
+                        completed: false,
+                        type: 'lesson',
+                        instruction: 'Create a new Git repository in your project folder',
+                        solution: 'git init',
+                        hint: 'Use the init command to start tracking changes'
+                    },
+                    { 
+                        id: 2, 
+                        title: 'git add', 
+                        description: 'Add files to staging', 
+                        category: 'basic', 
+                        completed: false,
+                        type: 'lesson',
+                        instruction: 'Add the file "test.txt" to the staging area',
+                        solution: 'git add test.txt',
+                        hint: 'Use add command followed by filename'
+                    },
+                    { 
+                        id: 3, 
+                        title: 'git commit', 
+                        description: 'Create commits', 
+                        category: 'basic', 
+                        completed: false,
+                        type: 'lesson',
+                        instruction: 'Create a commit with message "First commit"',
+                        solution: 'git commit -m "First commit"',
+                        hint: 'Use -m flag for commit message'
+                    },
+                    { 
+                        id: 4, 
+                        title: 'git status', 
+                        description: 'Check repository status', 
+                        category: 'basic', 
+                        completed: false,
+                        type: 'lesson',
+                        instruction: 'Check the current status of your repository',
+                        solution: 'git status',
+                        hint: 'Status shows what files are staged, modified, or untracked'
+                    },
+                    { id: 5, title: 'git branch', description: 'Create new branches', category: 'basic', completed: true },
+                    { id: 6, title: 'git checkout', description: 'Switch branches', category: 'basic', completed: true },
+                    { id: 7, title: 'git merge', description: 'Merge branches', category: 'advanced', completed: true },
+                    { id: 8, title: 'git diff', description: 'Compare changes', category: 'advanced', completed: true },
+                    { id: 9, title: 'git log', description: 'View commit history', category: 'advanced', completed: true },
+                    { id: 10, title: 'git fetch', description: 'Fetch remote changes', category: 'advanced', completed: true },
+                    { id: 11, title: 'git restore', description: 'Restore files from commits', category: 'advanced', completed: true },
+                    { id: 12, title: 'git reset', description: 'Undo commits', category: 'advanced', completed: true },
+                    { id: 13, title: 'git cherry-pick', description: 'Pick specific commits', category: 'expert', completed: true },
+                    { id: 14, title: 'git revert', description: 'Safely undo commits', category: 'expert', completed: true },
+                    { id: 15, title: 'git commit --amend', description: 'Modify last commit', category: 'expert', completed: true },
+                    { id: 16, title: 'git merge --squash', description: 'Squash merge branches', category: 'expert', completed: true },
+                    { id: 17, title: 'git stash', description: 'Temporary storage', category: 'advanced', completed: false },
+                    { id: 18, title: 'git pull', description: 'Fetch and merge', category: 'advanced', completed: false },
+                    { id: 19, title: 'git rebase', description: 'Rewrite history', category: 'expert', completed: false },
+                    { id: 20, title: 'git tag', description: 'Create version tags', category: 'advanced', completed: false },
+                    { id: 21, title: 'git bisect', description: 'Find bug commits', category: 'expert', completed: false }
+                ],
+                
+                get allTodos() {
+                    return this.todos;
+                },
+                
+                get completedTodos() {
+                    return this.todos.filter(todo => todo.completed);
+                },
+                
+                get pendingTodos() {
+                    return this.todos.filter(todo => !todo.completed);
+                },
+                
+                addTodo() {
+                    if (this.newTodo.title.trim()) {
+                        this.todos.push({
+                            id: Date.now(),
+                            title: this.newTodo.title,
+                            description: this.newTodo.description || `Learn ${this.newTodo.title}`,
+                            category: this.newTodo.category,
+                            completed: false
+                        });
+                        this.newTodo = { title: '', category: 'basic', description: '' };
+                        this.saveTodos();
+                    }
+                },
+                
+                toggleTodo(id) {
+                    const todo = this.todos.find(t => t.id === id);
+                    if (todo) {
+                        todo.completed = !todo.completed;
+                        this.saveTodos();
+                    }
+                },
+                
+                deleteTodo(id) {
+                    this.todos = this.todos.filter(t => t.id !== id);
+                    this.saveTodos();
+                },
+                
+                saveTodos() {
+                    localStorage.setItem('gitTodos', JSON.stringify(this.todos));
+                },
+                
+                clearAllData() {
+                    if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+                        localStorage.removeItem('gitTodos');
+                        location.reload();
+                    }
+                },
+                
+                showHint(id) {
+                    const todo = this.todos.find(t => t.id === id);
+                    if (todo) {
+                        todo.showHint = !todo.showHint;
+                        this.saveTodos();
+                    }
+                },
+                
+                showSolution(id) {
+                    const todo = this.todos.find(t => t.id === id);
+                    if (todo) {
+                        todo.showSolution = !todo.showSolution;
+                        this.saveTodos();
+                    }
+                },
+                
+                toggleInstruction(id) {
+                    // Close all other instructions first
+                    this.todos.forEach(todo => {
+                        if (todo.id !== id) {
+                            todo.showInstruction = false;
+                        }
+                    });
+                    
+                    // Toggle current instruction
+                    const todo = this.todos.find(t => t.id === id);
+                    if (todo) {
+                        todo.showInstruction = !todo.showInstruction;
+                        this.saveTodos();
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>
